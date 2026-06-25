@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wardrobe — Your Digital Closet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #12121f;
+    --surface: #1e1e30;
+    --card: #26263a;
+    --card-hover: #2e2e44;
+    --accent: #c8b8e8;
+    --accent-dim: #7b6fa0;
+    --accent-glow: rgba(200,184,232,0.15);
+    --text: #f0edf8;
+    --text-muted: #8880a8;
+    --danger: #e87878;
+    --success: #78c8a0;
+    --border: rgba(200,184,232,0.12);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(18,18,31,0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .logo span { color: var(--text-muted); font-weight: 400; font-size: 1rem; margin-left: 6px; vertical-align: middle; }
+
+  nav { display: flex; gap: 6px; }
+
+  .nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 18px;
+    border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .nav-btn:hover, .nav-btn.active {
+    background: var(--accent-glow);
+    border-color: var(--accent-dim);
+    color: var(--accent);
+  }
+
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 40px; }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Closet ── */
+  .closet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+  .section-title small {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 10px;
+  }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+
+  .filter-chip {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .filter-chip:hover { border-color: var(--accent-dim); color: var(--accent); }
+  .filter-chip.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #12121f;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn-primary:hover { background: #d8c8f8; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,184,232,0.3); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--card-hover); border-color: var(--accent-dim); }
+
+  .clothes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+  }
+
+  .clothing-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: all 0.22s;
+    cursor: pointer;
+    position: relative;
+  }
+  .clothing-card:hover { border-color: var(--accent-dim); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .clothing-card .img-wrap { aspect-ratio: 3/4; background: var(--surface); overflow: hidden; position: relative; }
+  .clothing-card .img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+  .clothing-card:hover .img-wrap img { transform: scale(1.05); }
+  .clothing-card .card-meta { padding: 10px 12px; }
+  .clothing-card .card-name { font-size: 0.82rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+
+  .tag-badge {
+    display: inline-block;
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-dim);
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .clothing-card .delete-btn {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: rgba(18,18,31,0.8);
+    border: 1px solid var(--border);
+    color: var(--danger);
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s;
+    font-size: 0.7rem;
+  }
+  .clothing-card:hover .delete-btn { opacity: 1; }
+
+  .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+  .empty-icon { font-size: 3.5rem; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+  .empty-state p { font-size: 0.85rem; max-width: 280px; margin: 0 auto; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 200;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%; max-width: 460px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 24px; }
+
+  .upload-zone {
+    border: 2px dashed var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+    background: var(--accent-glow);
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(200,184,232,0.12); }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: 10px; }
+  .upload-zone p { font-size: 0.85rem; color: var(--text-muted); }
+  .upload-zone strong { color: var(--accent); }
+
+  .upload-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: var(--radius-sm); margin-bottom: 20px; display: none; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .form-group input[type="text"] {
+    width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); padding: 10px 14px; font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+  }
+  .form-group input[type="text"]:focus { border-color: var(--accent-dim); }
+
+  .category-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .cat-pill {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-muted);
+    padding: 6px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.18s;
+  }
+  .cat-pill:hover { border-color: var(--accent-dim); color: var(--accent); }
+  .cat-pill.selected { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+  .modal-actions .btn-primary { flex: 1; justify-content: center; }
+
+  .btn-ghost {
+    background: none; border: 1px solid var(--border); color: var(--text-muted);
+    padding: 10px 18px; border-radius: 100px; font-family: 'Inter', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent-dim); color: var(--text); }
+
+  /* ── Weather Card ── */
+  .weather-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .weather-card.loaded { border-color: var(--accent-dim); }
+
+  .weather-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--accent-glow) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .weather-emoji { font-size: 2.8rem; line-height: 1; flex-shrink: 0; }
+
+  .weather-info { flex: 1; min-width: 0; }
+  .weather-temp { font-size: 1.5rem; font-weight: 600; line-height: 1; margin-bottom: 3px; }
+  .weather-desc { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px; }
+  .weather-location { font-size: 0.75rem; color: var(--accent-dim); display: flex; align-items: center; gap: 4px; }
+
+  .weather-vibe {
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    line-height: 1.5;
+    flex-shrink: 0;
+    max-width: 220px;
+  }
+  .weather-vibe strong { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; color: var(--accent-dim); }
+
+  .weather-loading {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--text-muted); font-size: 0.85rem;
+    padding: 18px 22px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 28px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Generate Toggle ── */
+  .mode-toggle {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 4px;
+    gap: 2px;
+    margin-bottom: 24px;
+    width: fit-content;
+    margin-left: auto; margin-right: auto;
+  }
+  .mode-btn {
+    background: none; border: none; color: var(--text-muted);
+    padding: 8px 20px; border-radius: 100px; font-family: 'Inter', sans-serif;
+    font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mode-btn.active { background: var(--accent); color: #12121f; font-weight: 600; }
+
+  /* ── Outfit Section ── */
+  .outfit-hero { text-align: center; padding: 32px 0 24px; }
+  .outfit-hero h2 { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 8px; }
+  .outfit-hero p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+
+  .outfit-display {
+    display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 32px; min-height: 260px; align-items: center;
+  }
+
+  .outfit-slot {
+    width: 155px; background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; transition: all 0.3s; position: relative;
+  }
+  .outfit-slot.spinning { animation: pulse 0.6s ease infinite alternate; }
+  @keyframes pulse {
+    from { border-color: var(--accent-dim); box-shadow: 0 0 0 0 var(--accent-glow); }
+    to   { border-color: var(--accent);     box-shadow: 0 0 20px 4px var(--accent-glow); }
+  }
+  .outfit-slot .slot-img { aspect-ratio: 3/4; background: var(--surface); overflow: hidden; }
+  .outfit-slot .slot-img img { width: 100%; height: 100%; object-fit: cover; }
+  .outfit-slot .slot-label { padding: 8px 10px; font-size: 0.72rem; color: var(--text-muted); text-align: center; }
+  .outfit-slot .slot-name { font-size: 0.8rem; font-weight: 500; text-align: center; padding: 0 8px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .weather-note {
+    background: var(--accent-glow);
+    border: 1px solid var(--accent-dim);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 0.82rem;
+    color: var(--accent);
+    margin: 0 auto 24px;
+    max-width: 520px;
+    line-height: 1.5;
+    display: none;
+  }
+  .weather-note.visible { display: block; }
+  .weather-note strong { color: var(--text); }
+
+  .outfit-placeholder { text-align: center; padding: 60px 20px; color: var(--text-muted); }
+  .outfit-placeholder .icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.3; }
+
+  .outfit-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* ── Saved ── */
+  .saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .saved-outfit-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: all 0.2s; }
+  .saved-outfit-card:hover { border-color: var(--accent-dim); }
+  .saved-outfit-card .outfit-mini { display: flex; gap: 8px; margin-bottom: 14px; }
+  .outfit-mini-img { flex: 1; aspect-ratio: 2/3; border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
+  .outfit-mini-img img { width: 100%; height: 100%; object-fit: cover; }
+  .saved-meta { display: flex; align-items: center; justify-content: space-between; }
+  .saved-date { font-size: 0.75rem; color: var(--text-muted); }
+  .saved-weather-tag {
+    font-size: 0.7rem; color: var(--accent-dim);
+    background: var(--accent-glow); border: 1px solid rgba(200,184,232,0.1);
+    padding: 2px 8px; border-radius: 100px;
+  }
+  .del-saved { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; padding: 4px 8px; border-radius: var(--radius-sm); transition: all 0.18s; }
+  .del-saved:hover { color: var(--danger); background: rgba(232,120,120,0.1); }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--card); border: 1px solid var(--accent-dim); color: var(--accent);
+    padding: 12px 24px; border-radius: 100px; font-size: 0.85rem; font-weight: 500;
+    z-index: 500; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 600px) {
+    header { padding: 14px 20px; }
+    main { padding: 20px; }
+    .logo { font-size: 1.3rem; }
+    .nav-btn { padding: 6px 12px; font-size: 0.75rem; }
+    .weather-card { flex-wrap: wrap; }
+    .weather-vibe { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Wardrobe <span>✦ digital closet</span></div>
+  <nav>
+    <button class="nav-btn active" onclick="showSection('closet', this)">Closet</button>
+    <button class="nav-btn" onclick="showSection('outfit', this)">Generate</button>
+    <button class="nav-btn" onclick="showSection('saved', this)">Saved</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ── CLOSET ── -->
+  <section id="closet" class="section active">
+    <div class="closet-header">
+      <h1 class="section-title">My Closet <small id="item-count">0 items</small></h1>
+      <button class="btn-primary" onclick="openModal()"><span>＋</span> Add Item</button>
+    </div>
+    <div class="filter-row">
+      <button class="filter-chip active" onclick="filterCloset('all', this)">All</button>
+      <button class="filter-chip" onclick="filterCloset('tops', this)">Tops</button>
+      <button class="filter-chip" onclick="filterCloset('bottoms', this)">Bottoms</button>
+      <button class="filter-chip" onclick="filterCloset('outerwear', this)">Outerwear</button>
+      <button class="filter-chip" onclick="filterCloset('shoes', this)">Shoes</button>
+      <button class="filter-chip" onclick="filterCloset('accessories', this)">Accessories</button>
+      <button class="filter-chip" onclick="filterCloset('dresses', this)">Dresses</button>
+    </div>
+    <div class="clothes-grid" id="clothes-grid"></div>
+    <div class="empty-state" id="empty-closet">
+      <div class="empty-icon">🧥</div>
+      <h3>Your closet is empty</h3>
+      <p>Add your first clothing item to start building your digital wardrobe.</p>
+    </div>
+  </section>
+
+  <!-- ── OUTFIT GENERATOR ── -->
+  <section id="outfit" class="section">
+    <div class="outfit-hero">
+      <h2>Today's Outfit</h2>
+      <p>Random pick or weather-matched — your call.</p>
+
+      <!-- Mode toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="mode-random" onclick="setMode('random')">🎲 Random</button>
+        <button class="mode-btn" id="mode-weather" onclick="setMode('weather')">🌤 Weather-Smart</button>
+      </div>
+
+      <!-- Weather card (shown in weather mode) -->
+      <div id="weather-loading" class="weather-loading" style="display:none;">
+        <div class="spinner"></div>
+        Fetching current weather…
+      </div>
+      <div id="weather-card" class="weather-card" style="display:none;">
+        <div class="weather-emoji" id="w-emoji">☀️</div>
+        <div class="weather-info">
+          <div class="weather-temp" id="w-temp">—</div>
+          <div class="weather-desc" id="w-desc">—</div>
+          <div class="weather-location" id="w-location">📍 —</div>
+        </div>
+        <div class="weather-vibe">
+          <strong>Outfit guide</strong>
+          <span id="w-guide">—</span>
+        </div>
+      </div>
+
+      <!-- Weather note shown after generation -->
+      <div class="weather-note" id="weather-note"></div>
+
+      <div class="outfit-display" id="outfit-display">
+        <div class="outfit-placeholder">
+          <div class="icon">🎲</div>
+          <p>Hit Generate to build your outfit</p>
+        </div>
+      </div>
+
+      <div class="outfit-actions">
+        <button class="btn-primary" id="gen-btn" onclick="generateOutfit()">✦ Generate Outfit</button>
+        <button class="btn-secondary" id="save-outfit-btn" onclick="saveOutfit()" style="display:none;">♡ Save Outfit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SAVED ── -->
+  <section id="saved" class="section">
+    <div class="closet-header">
+      <h1 class="section-title">Saved Outfits <small id="saved-count">0 saved</small></h1>
+    </div>
+    <div class="saved-grid" id="saved-grid"></div>
+    <div class="empty-state" id="empty-saved">
+      <div class="empty-icon">💫</div>
+      <h3>No saved outfits yet</h3>
+      <p>Generate an outfit and save the ones you love.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ── UPLOAD MODAL ── -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <h2>Add to Closet</h2>
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" accept="image/*" id="file-input" onchange="handleFile(event)">
+      <div class="upload-icon">📸</div>
+      <p><strong>Click or drag</strong> a photo here</p>
+      <p>JPEG, PNG, WEBP — any size</p>
+    </div>
+    <img id="upload-preview" class="upload-preview" alt="Preview">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="item-name" placeholder="e.g. White linen shirt">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <div class="category-pills" id="category-pills">
+        <button class="cat-pill" onclick="selectCat(this,'tops')">Tops</button>
+        <button class="cat-pill" onclick="selectCat(this,'bottoms')">Bottoms</button>
+        <button class="cat-pill" onclick="selectCat(this,'outerwear')">Outerwear</button>
+        <button class="cat-pill" onclick="selectCat(this,'shoes')">Shoes</button>
+        <button class="cat-pill" onclick="selectCat(this,'accessories')">Accessories</button>
+        <button class="cat-pill" onclick="selectCat(this,'dresses')">Dresses</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="addItem()">Add to Closet</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── State ──
+  let clothes = JSON.parse(localStorage.getItem('wdc_clothes') || '[]');
+  let savedOutfits = JSON.parse(localStorage.getItem('wdc_outfits') || '[]');
+  let currentOutfit = null;
+  let selectedCategory = '';
+  let currentFilter = 'all';
+  let uploadedImageData = null;
+  let outfitMode = 'random'; // 'random' | 'weather'
+  let weatherData = null;
+  let weatherFetched = false;
+
+  renderCloset();
+  renderSaved();
+
+  // ── Nav ──
+  function showSection(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── Mode toggle ──
+  function setMode(mode) {
+    outfitMode = mode;
+    document.getElementById('mode-random').classList.toggle('active', mode === 'random');
+    document.getElementById('mode-weather').classList.toggle('active', mode === 'weather');
+
+    const wLoading = document.getElementById('weather-loading');
+    const wCard = document.getElementById('weather-card');
+    const note = document.getElementById('weather-note');
+
+    if (mode === 'weather') {
+      note.classList.remove('visible');
+      if (!weatherFetched) {
+        wCard.style.display = 'none';
+        wLoading.style.display = 'flex';
+        fetchWeather();
+      } else {
+        wCard.style.display = 'flex';
+        wLoading.style.display = 'none';
+      }
+    } else {
+      wCard.style.display = 'none';
+      wLoading.style.display = 'none';
+      note.classList.remove('visible');
+    }
+  }
+
+  // ── Weather Fetch via Anthropic API (web_search tool) ──
+  async function fetchWeather() {
+    // Try to get city name from geolocation for a more accurate query
+    let cityHint = 'Gurugram, India';
+    try {
+      cityHint = await getCityFromGeo();
+    } catch (_) {}
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+          system: `You are a weather data extractor. The user will ask for current weather. 
+Use web_search to find it, then reply ONLY with a valid JSON object (no markdown, no extra text) with these exact fields:
+{
+  "city": "City name",
+  "temp": <number in Celsius>,
+  "feels": <number in Celsius>,
+  "condition": "short description e.g. Sunny / Partly cloudy / Rainy",
+  "emoji": "one weather emoji",
+  "wind": <wind speed in km/h as number>,
+  "isRainy": <true or false>
+}`,
+          messages: [{
+            role: 'user',
+            content: `What is the current weather in ${cityHint}? Return only JSON.`
+          }]
+        })
+      });
+
+      const data = await response.json();
+
+      // Extract the final text block (after tool use)
+      const textBlock = data.content && data.content.filter(b => b.type === 'text').pop();
+      if (!textBlock) throw new Error('No text response');
+
+      let raw = textBlock.text.trim();
+      // Strip any accidental markdown fences
+      raw = raw.replace(/```json|```/g, '').trim();
+      const w = JSON.parse(raw);
+
+      weatherData = {
+        temp:   Math.round(w.temp),
+        feels:  Math.round(w.feels ?? w.temp),
+        condition: w.condition || 'Clear',
+        emoji:  w.emoji || '🌤',
+        wind:   Math.round(w.wind ?? 0),
+        isRainy: !!w.isRainy,
+        city:   w.city || cityHint
+      };
+
+      weatherFetched = true;
+      renderWeatherCard();
+    } catch (err) {
+      console.error('Weather fetch failed:', err);
+      document.getElementById('weather-loading').innerHTML =
+        '<span style="color:var(--danger)">⚠ Could not fetch weather. Try again later.</span>';
+    }
+  }
+
+  // Get city name from browser geolocation + reverse geocode
+  function getCityFromGeo() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject('no geo');
+      navigator.geolocation.getCurrentPosition(
+        async pos => {
+          try {
+            const { latitude: lat, longitude: lon } = pos.coords;
+            const r = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+              { headers: { 'Accept-Language': 'en' } }
+            );
+            const d = await r.json();
+            const city = d.address?.city || d.address?.town || d.address?.village || 'your location';
+            const country = d.address?.country || '';
+            resolve(`${city}${country ? ', ' + country : ''}`);
+          } catch { reject('geocode failed'); }
+        },
+        () => reject('denied')
+      );
+    });
+  }
+
+  // Decode weather — new shape uses condition string + emoji directly from API
+  function decodeWeather(w) {
+    // w can be a weatherData object or a saved {emoji, condition} snapshot
+    if (typeof w === 'object' && w.emoji) return { text: w.condition || 'Clear', emoji: w.emoji };
+    return { text: 'Clear', emoji: '☀️' };
+  }
+
+  // Weather → outfit logic
+  function getOutfitProfile(w) {
+    const t = w.temp;
+    const isRainy = !!w.isRainy;
+    const isCold = t < 10;
+    const isCool = t >= 10 && t < 18;
+    const isMild = t >= 18 && t < 26;
+    const isWarm = t >= 26 && t < 33;
+    const isHot  = t >= 33;
+
+    let skipCats = [];
+    let guide = '';
+    let label = '';
+
+    if (isHot) {
+      skipCats = ['outerwear'];
+      guide = 'Scorching heat — skip the layers, go light & breathable.';
+      label = `🌡 ${w.temp}°C · Hot`;
+    } else if (isWarm) {
+      skipCats = ['outerwear'];
+      guide = 'Warm day — outerwear optional, keep it breezy.';
+      label = `☀️ ${w.temp}°C · Warm`;
+    } else if (isMild) {
+      guide = 'Comfortable weather — anything works!';
+      label = `🌤 ${w.temp}°C · Mild`;
+    } else if (isCool) {
+      guide = 'A bit cool — a light jacket or outerwear layer recommended.';
+      label = `🧥 ${w.temp}°C · Cool`;
+    } else if (isCold) {
+      guide = 'Cold outside — bundle up with outerwear and layers.';
+      label = `❄️ ${w.temp}°C · Cold`;
+    }
+
+    if (isRainy) {
+      guide += ' Rain expected — waterproof shoes & carry an umbrella or scarf.';
+      label += ' · Rainy';
+    }
+
+    return { skipCats, guide, label };
+  }
+
+  function renderWeatherCard() {
+    const w = weatherData;
+    const decoded = decodeWeather(w);
+    const profile = getOutfitProfile(w);
+
+    document.getElementById('w-emoji').textContent = decoded.emoji;
+    document.getElementById('w-temp').textContent = `${w.temp}°C  (feels ${w.feels}°C)`;
+    document.getElementById('w-desc').textContent = `${decoded.text}${w.wind ? ' · Wind ' + w.wind + ' km/h' : ''}`;
+    document.getElementById('w-location').textContent = `📍 ${w.city}`;
+    document.getElementById('w-guide').textContent = profile.guide;
+
+    document.getElementById('weather-loading').style.display = 'none';
+    const card = document.getElementById('weather-card');
+    card.style.display = 'flex';
+    card.classList.add('loaded');
+  }
+
+  // ── Closet Render ──
+  function renderCloset() {
+    const grid = document.getElementById('clothes-grid');
+    const empty = document.getElementById('empty-closet');
+    const count = document.getElementById('item-count');
+
+    const filtered = currentFilter === 'all' ? clothes : clothes.filter(c => c.category === currentFilter);
+    count.textContent = `${clothes.length} item${clothes.length !== 1 ? 's' : ''}`;
+
+    if (filtered.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+    } else {
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      grid.innerHTML = filtered.map(item => `
+        <div class="clothing-card">
+          <div class="img-wrap">
+            <img src="${item.img}" alt="${item.name}" loading="lazy">
+            <button class="delete-btn" onclick="deleteItem('${item.id}', event)">✕</button>
+          </div>
+          <div class="card-meta">
+            <div class="card-name">${item.name}</div>
+            <span class="tag-badge">${item.category}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+  function filterCloset(cat, btn) {
+    currentFilter = cat;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    renderCloset();
+  }
+
+  function deleteItem(id, e) {
+    e.stopPropagation();
+    clothes = clothes.filter(c => c.id !== id);
+    save();
+    renderCloset();
+    showToast('Item removed');
+  }
+
+  // ── Modal ──
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('item-name').value = '';
+    document.getElementById('upload-preview').style.display = 'none';
+    document.getElementById('upload-zone').style.display = 'block';
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+    selectedCategory = '';
+    uploadedImageData = null;
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+  function selectCat(btn, cat) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCategory = cat;
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      uploadedImageData = ev.target.result;
+      const preview = document.getElementById('upload-preview');
+      preview.src = uploadedImageData;
+      preview.style.display = 'block';
+      document.getElementById('upload-zone').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) handleFile({ target: { files: [file] } });
+  });
+
+  function addItem() {
+    const name = document.getElementById('item-name').value.trim();
+    if (!uploadedImageData) { showToast('Please add a photo'); return; }
+    if (!name) { showToast('Please enter a name'); return; }
+    if (!selectedCategory) { showToast('Please pick a category'); return; }
+    clothes.push({ id: Date.now().toString(), name, category: selectedCategory, img: uploadedImageData });
+    save(); renderCloset(); closeModal();
+    showToast('Added to your closet ✦');
+  }
+
+  // ── Generate Outfit ──
+  const SLOT_ORDER = ['tops', 'bottoms', 'outerwear', 'shoes', 'accessories', 'dresses'];
+  const SLOT_ICONS = { tops: '👕', bottoms: '👖', outerwear: '🧥', shoes: '👟', accessories: '👜', dresses: '👗' };
+
+  function generateOutfit() {
+    if (clothes.length === 0) { showToast('Add some clothes first!'); return; }
+
+    const byCategory = {};
+    clothes.forEach(c => {
+      if (!byCategory[c.category]) byCategory[c.category] = [];
+      byCategory[c.category].push(c);
+    });
+
+    let skipCats = [];
+    let weatherLabel = '';
+
+    if (outfitMode === 'weather' && weatherData) {
+      const profile = getOutfitProfile(weatherData);
+      skipCats = profile.skipCats;
+      weatherLabel = profile.label;
+
+      // Show weather reasoning note
+      const note = document.getElementById('weather-note');
+      const decoded = decodeWeather(weatherData);
+      const skippedNames = skipCats.map(c => c).join(', ');
+      note.innerHTML = `${decoded.emoji} <strong>${weatherLabel}</strong> — ${profile.guide}${skippedNames ? ` <em>(Skipping: ${skippedNames})</em>` : ''}`;
+      note.classList.add('visible');
+    } else {
+      document.getElementById('weather-note').classList.remove('visible');
+    }
+
+    currentOutfit = {};
+    let availableCats = Object.keys(byCategory).filter(c => !skipCats.includes(c));
+
+    if (availableCats.length === 0) {
+      // fallback: ignore skip if nothing would be included
+      availableCats = Object.keys(byCategory);
+    }
+
+    availableCats.forEach(cat => {
+      const items = byCategory[cat];
+      currentOutfit[cat] = items[Math.floor(Math.random() * items.length)];
+    });
+
+    const display = document.getElementById('outfit-display');
+    const cats = SLOT_ORDER.filter(c => currentOutfit[c]);
+
+    display.innerHTML = cats.map(cat => `
+      <div class="outfit-slot spinning" id="slot-${cat}">
+        <div class="slot-img"><img src="${currentOutfit[cat].img}" alt="${currentOutfit[cat].name}"></div>
+        <div class="slot-label">${SLOT_ICONS[cat]} ${cat}</div>
+        <div class="slot-name">${currentOutfit[cat].name}</div>
+      </div>
+    `).join('');
+
+    setTimeout(() => {
+      document.querySelectorAll('.outfit-slot').forEach(s => s.classList.remove('spinning'));
+    }, 900);
+
+    document.getElementById('save-outfit-btn').style.display = 'flex';
+  }
+
+  function saveOutfit() {
+    if (!currentOutfit) return;
+    const decoded = weatherData && outfitMode === 'weather' ? decodeWeather(weatherData) : null;
+    savedOutfits.push({
+      id: Date.now().toString(),
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      weatherTag: decoded ? `${decoded.emoji} ${weatherData.temp}°C · ${decoded.text}` : null,
+      items: { ...currentOutfit }
+    });
+    save(); renderSaved();
+    showToast('Outfit saved ♡');
+  }
+
+  // ── Saved ──
+  function renderSaved() {
+    const grid = document.getElementById('saved-grid');
+    const empty = document.getElementById('empty-saved');
+    document.getElementById('saved-count').textContent = `${savedOutfits.length} saved`;
+
+    if (savedOutfits.length === 0) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+    } else {
+      grid.style.display = 'grid';
+      empty.style.display = 'none';
+      grid.innerHTML = savedOutfits.slice().reverse().map(o => {
+        const imgs = Object.values(o.items).slice(0, 4);
+        return `
+          <div class="saved-outfit-card">
+            <div class="outfit-mini">
+              ${imgs.map(item => `<div class="outfit-mini-img"><img src="${item.img}" alt="${item.name}"></div>`).join('')}
+            </div>
+            <div class="saved-meta">
+              <span class="saved-date">${o.date}${o.weatherTag ? ` · <span class="saved-weather-tag">${o.weatherTag}</span>` : ''}</span>
+              <button class="del-saved" onclick="deleteSaved('${o.id}')">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function deleteSaved(id) {
+    savedOutfits = savedOutfits.filter(o => o.id !== id);
+    save(); renderSaved();
+    showToast('Outfit removed');
+  }
+
+  // ── Persist ──
+  function save() {
+    localStorage.setItem('wdc_clothes', JSON.stringify(clothes));
+    localStorage.setItem('wdc_outfits', JSON.stringify(savedOutfits));
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
